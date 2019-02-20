@@ -1,6 +1,8 @@
 package Sender;
 
 import com.rabbitmq.client.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +18,7 @@ import static java.nio.file.Paths.get;
  * Core class of application uses RabbitMQ API
  */
 public class Sender {
+    private static final Logger log = LogManager.getLogger("Sender");
     private ConnectionFactory factory;
     private Channel channel;
     private Connection connection;
@@ -69,16 +72,15 @@ public class Sender {
                 .headers(hashMap)
                 .build();
         channel.basicPublish(exchangeName, routingKey, properties, messageByteArr);
+        log.info("Send file: " + fileName);
     }
 
     public void openConnections(){
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -86,10 +88,8 @@ public class Sender {
         try {
             channel.close();
             connection.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -97,7 +97,7 @@ public class Sender {
         try {
             channel.exchangeDeclare(exchangeName, exchangeType);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

@@ -1,6 +1,8 @@
 package Receiver;
 
 import com.rabbitmq.client.BuiltinExchangeType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.io.InputStreamReader;
  * Application can receive messages and files from exchange with topics
  */
 public class ServiceReceiver {
+    private static final Logger log = LogManager.getLogger("Receiver");
     private static final String HELP_MESSAGE =
             "\\help\n" +
             "\\exit\n" +
@@ -61,13 +64,16 @@ public class ServiceReceiver {
                 case "\\exit":
                     System.out.println("Stopping...");
                     receiver.closeConnections();
+                    log.info("Stop");
                     break mark;
                 case "\\help":
                     System.out.println(HELP_MESSAGE);
                     continue;
                 case "\\directoryPath":
                     System.out.println("Type directory Path for receiving files");
-                    receiver.setDirectoryPath(br.readLine());
+                    String dirPath = br.readLine();
+                    receiver.setDirectoryPath(dirPath);
+                    log.info("Set the directory path:" + dirPath);
             }
         }
     }

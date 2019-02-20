@@ -1,6 +1,8 @@
 package Receiver;
 
 import com.rabbitmq.client.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeoutException;
 
 public class Receiver {
+    private static final Logger log = LogManager.getLogger("Receiver");
     private ConnectionFactory factory;
     private Connection connection;
     private Channel channel;
@@ -21,11 +24,13 @@ public class Receiver {
 
     private DeliverCallback deliverCallback = (consumerTag, delivery) -> {
         BasicProperties properties = delivery.getProperties();
+        //splitting if a message or file
         if (properties.getContentType() != null && properties.getContentType().equals("file")) {
             getFile(delivery);
         } else {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             outputStream.write(delivery.getBody());
+            log.info(message);
         }
     };
 
@@ -55,10 +60,8 @@ public class Receiver {
             connection = factory.newConnection();
             channel = connection.createChannel();
             queueName = channel.queueDeclare().getQueue();  //1 application - 1 queue.
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -66,10 +69,8 @@ public class Receiver {
         try {
             channel.close();
             connection.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -77,7 +78,7 @@ public class Receiver {
         try {
             channel.exchangeDeclare(exchangeName, exchangeType);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -85,7 +86,7 @@ public class Receiver {
         try {
             channel.queueBind(queueName, exchangeName, bindingKey);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -93,7 +94,7 @@ public class Receiver {
         try {
             channel.basicConsume(queueName, true, deliverCallback, consumerTag->{});
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -119,9 +120,11 @@ public class Receiver {
             }
         try(FileOutputStream fileOutputStream = new FileOutputStream(receivedFile.toFile())) {
             fileOutputStream.write(delivery.getBody());
-            outputStream.write(("File '" + fileName + "' received").getBytes(StandardCharsets.UTF_8));
+            String message = "File '" + fileName + "' received\n";
+            outputStream.write(message.getBytes(StandardCharsets.UTF_8));
+            log.info(message);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 }

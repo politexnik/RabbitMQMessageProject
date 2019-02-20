@@ -1,6 +1,8 @@
 package Sender;
 
 import com.rabbitmq.client.BuiltinExchangeType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +14,8 @@ import java.nio.charset.StandardCharsets;
  * Application can send messages and files to exchanges with topics
  */
 public class ServiceSender {
-    private static final String HELP_MESSAGE = "\\exchangeName\n+ to set it" +
+    private static final Logger log = LogManager.getLogger("Sender");
+    private static final String HELP_MESSAGE = "\\exchangeName to set it" +
             "\\routingKey to set\n" +
             "\\file to send file\n" +
             "\\help" +
@@ -67,7 +70,7 @@ public class ServiceSender {
                     setRoutingKey();
                     continue;
                 case "\\file":
-                    //in case file sending going in another thread
+                    //in case file sending going in another parallel thread
                     System.out.println("Type file path:");
                     String fileName = br.readLine();
                     new Thread(()->{
@@ -81,23 +84,27 @@ public class ServiceSender {
             }
             //if there is no service command - send a message
             sender.sendMessage(exchangeName, routingKey, (message + "\n").getBytes(StandardCharsets.UTF_8), null);
+            log.info("Message: " + message);
         }
     }
     // i added some methods for code simplification
     private void setRoutingKey() throws IOException {
         System.out.println("Set the routingKey:");
         routingKey = br.readLine();
+        log.info("Set routing key: " + routingKey);
     }
 
     private void exit() throws IOException {
         System.out.println("Stopping...");
         sender.closeConnections();
         br.close();
+        log.info("Stop");
     }
 
     private void setExchangeName() throws IOException {
         System.out.println("Set the ExchangeName:");
         exchangeName = br.readLine();
         sender.exchangeDeclare(exchangeName,BuiltinExchangeType.TOPIC);
+        log.info("Set exchange name: " + exchangeName);
     }
 }
