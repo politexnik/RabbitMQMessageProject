@@ -15,10 +15,10 @@ import java.nio.charset.StandardCharsets;
  */
 public class ServiceSender {
     private static final Logger log = LogManager.getLogger("Sender");
-    private static final String HELP_MESSAGE = "\\exchangeName to set it" +
+    private static final String HELP_MESSAGE = "\\exchangeName to set\n" +
             "\\routingKey to set\n" +
-            "\\file to send file\n" +
-            "\\help" +
+            "\\file to send\n" +
+            "\\help\n" +
             "\\exit";
     private String exchangeName;
     private String message;

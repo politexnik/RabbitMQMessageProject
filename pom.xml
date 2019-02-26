@@ -52,7 +52,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>Main</mainClass>
+                            <mainClass>Receiver.ServiceReceiver</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -68,5 +68,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
